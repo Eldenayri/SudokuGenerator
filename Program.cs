@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace SudokuFilter
-{
     class Program
     {
         private const string OutputDir = "output";
@@ -169,4 +167,3 @@ namespace SudokuFilter
             return true;
         }
     }
-}

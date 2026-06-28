@@ -3,7 +3,7 @@ using System.Collections.Generic;
 public class BUG
 {
     // Dönüş: true ise bir hücreye kesin değer atandı → döngüde "break" ile kullanılır
-    public bool Fill(List<int>[,] allCellCandidates, SudokuCell[,] cells)
+    public bool Fill(List<int>[,] allCellCandidates, SudokuCell[,] cells, BasicCalculate basicCalculate)
     {
         // BUG koşulu:
         // 1. Tüm çözülmemiş hücrelerin tam 2 adayı olmalı,
@@ -43,8 +43,8 @@ public class BUG
         // BUG+1 hücresi bulunamadı (hepsi 2-adaylı veya hiç çözülmemiş hücre yok)
         if (bugCellCount != 1) return false;
 
-        // BUG+1 hücresinin 3 adayından hangisi satır, sütun ve blokta 3 kez görünüyor?
-        List<int> bugCands = allCellCandidates[bugRow, bugCol];
+        // FIX: Listeyi kopyala — döngü içinde Clear() çağrılmasına karşı güvenlik
+        List<int> bugCands = new List<int>(allCellCandidates[bugRow, bugCol]);
 
         foreach (int digit in bugCands)
         {
@@ -57,8 +57,12 @@ public class BUG
             {
                 // Bu digit BUG+1 hücresinin çözümü
                 cells[bugRow, bugCol].SetValue(digit);
-                allCellCandidates[bugRow, bugCol].Clear();
                 cells[bugRow, bugCol].SetFixed(true);
+                allCellCandidates[bugRow, bugCol].Clear();
+
+                // FIX: Komşu hücrelerin adaylarını güncelle
+                basicCalculate.UpdateNeighbours(bugRow, bugCol, digit, allCellCandidates, cells);
+
                 return true;
             }
         }
@@ -66,7 +70,6 @@ public class BUG
         return false;
     }
 
-    // Verilen birim (hücre listesi) içinde digit kaç hücrede aday olarak var?
     private int CountDigitInUnit(
         int digit,
         List<int>[,] allCellCandidates,

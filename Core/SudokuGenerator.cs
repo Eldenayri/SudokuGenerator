@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SudokuFilter
-{
+
     public class SudokuGenerator
     {
         private Random random = new Random();
@@ -145,4 +144,3 @@ namespace SudokuFilter
         private int BitCount(int x) { int n = 0; while (x != 0) { x &= x - 1; n++; } return n; }
         private int BitToDigit(int bit) { int d = 1; while (bit > 1) { bit >>= 1; d++; } return d; }
     }
-}

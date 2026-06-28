@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class Jellyfish
+public class JellyFish
 {
     public bool Fill(List<int>[,] allCellCandidates, SudokuCell[,] cells)
     {

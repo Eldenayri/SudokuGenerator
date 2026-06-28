@@ -8,22 +8,18 @@ public class Skyscraper
 
         for (int number = 1; number <= 9; number++)
         {
-            // her satır için 2 adaylı kolonları topla
+            // Her satır için number adayının tam 2 sütunda geçtiği satırları topla
             List<(int row, int c1, int c2)> rows = new();
 
             for (int row = 0; row < 9; row++)
             {
                 List<int> cols = new();
-
                 for (int col = 0; col < 9; col++)
                 {
-                    if (cells[row, col].IsFixed())
-                        continue;
-
+                    if (cells[row, col].IsFixed()) continue;
                     if (allCellCandidates[row, col].Contains(number))
                         cols.Add(col);
                 }
-
                 if (cols.Count == 2)
                     rows.Add((row, cols[0], cols[1]));
             }
@@ -38,66 +34,42 @@ public class Skyscraper
 
                     int a1 = rows[i].c1;
                     int a2 = rows[i].c2;
-
                     int b1 = rows[j].c1;
                     int b2 = rows[j].c2;
 
-                    // ortak kolon var mı?
+                    // Ortak sütunu bul
                     int common = -1;
                     int r1Other = -1;
                     int r2Other = -1;
 
-                    if (a1 == b1)
-                    {
-                        common = a1;
-                        r1Other = a2;
-                        r2Other = b2;
-                    }
-                    else if (a1 == b2)
-                    {
-                        common = a1;
-                        r1Other = a2;
-                        r2Other = b1;
-                    }
-                    else if (a2 == b1)
-                    {
-                        common = a2;
-                        r1Other = a1;
-                        r2Other = b2;
-                    }
-                    else if (a2 == b2)
-                    {
-                        common = a2;
-                        r1Other = a1;
-                        r2Other = b1;
-                    }
+                    if (a1 == b1)      { common = a1; r1Other = a2; r2Other = b2; }
+                    else if (a1 == b2) { common = a1; r1Other = a2; r2Other = b1; }
+                    else if (a2 == b1) { common = a2; r1Other = a1; r2Other = b2; }
+                    else if (a2 == b2) { common = a2; r1Other = a1; r2Other = b1; }
 
-                    if (common == -1)
-                        continue;
+                    if (common == -1) continue;
 
-                    // iki uç hücre
+                    // FIX: Ortak sütundaki iki hücre aynı blokta olmamalı.
+                    // Aynı blokta olsalar bu Skyscraper değil, başka bir pattern'dir.
+                    if (r1 / 3 == r2 / 3) continue;
+
+                    // İki uç hücre (common sütun dışındaki hücreler)
                     int p1r = r1, p1c = r1Other;
                     int p2r = r2, p2c = r2Other;
 
-                    // silme işlemi
+                    // Her ikisini de gören hücrelerden number'ı sil
                     for (int r = 0; r < 9; r++)
                     {
                         for (int c = 0; c < 9; c++)
                         {
-                            if (cells[r, c].IsFixed())
-                                continue;
+                            if (cells[r, c].IsFixed()) continue;
+                            if (!allCellCandidates[r, c].Contains(number)) continue;
 
-                            if (!allCellCandidates[r, c].Contains(number))
-                                continue;
-
-                            // pattern hücrelerini atla
+                            // Pattern hücrelerini atla
                             if ((r == r1 && c == r1Other) ||
-                                (r == r2 && c == r2Other))
-                                continue;
+                                (r == r2 && c == r2Other)) continue;
 
-                            // iki "uç" hücreyi aynı anda görebiliyor mu?
-                            if (CanSee(r, c, p1r, p1c) &&
-                                CanSee(r, c, p2r, p2c))
+                            if (CanSee(r, c, p1r, p1c) && CanSee(r, c, p2r, p2c))
                             {
                                 allCellCandidates[r, c].Remove(number);
                                 changed = true;
@@ -115,8 +87,6 @@ public class Skyscraper
     {
         if (r1 == r2) return true;
         if (c1 == c2) return true;
-
-        return (r1 / 3 == r2 / 3) &&
-               (c1 / 3 == c2 / 3);
+        return (r1 / 3 == r2 / 3) && (c1 / 3 == c2 / 3);
     }
 }

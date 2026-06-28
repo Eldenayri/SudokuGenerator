@@ -25,13 +25,12 @@ public class UniqueRectangle
                         // 4 köşe hücre
                         var corners = new (int r, int c)[]
                         {
-                        (r1, c1), (r1, c2),
-                        (r2, c1), (r2, c2)
+                            (r1, c1), (r1, c2),
+                            (r2, c1), (r2, c2)
                         };
 
                         // Hepsi aynı blokta olmamalı
-                        bool allSameBlock =
-                            (r1 / 3 == r2 / 3) && (c1 / 3 == c2 / 3);
+                        bool allSameBlock = (r1 / 3 == r2 / 3) && (c1 / 3 == c2 / 3);
                         if (allSameBlock) continue;
 
                         // Her köşenin adaylarını al
@@ -39,54 +38,50 @@ public class UniqueRectangle
                         foreach (var (r, c) in corners)
                             candsList.Add(allCellCandidates[r, c]);
 
-                        // Tam olarak 2 aday içeren ve aynı çifte sahip köşeleri bul
-                        for (int pivot = 0; pivot < 4; pivot++)
+                        // 3 köşe tam olarak [A, B] içeriyor mu?
+                        List<int> pair = null;
+                        int floorCount = 0;
+                        int roofIdx = -1;
+
+                        for (int i = 0; i < 4; i++)
                         {
-                            // 3 köşe tam olarak [A, B] içeriyor mu?
-                            List<int> pair = null;
-                            int floorCount = 0;
-                            int roofIdx = -1;
+                            // FIX: break → continue. Fixed hücreyle karşılaşınca
+                            // döngünün geri kalanını da atlamak yanlış.
+                            if (cells[corners[i].r, corners[i].c].IsFixed()) continue;
 
-                            for (int i = 0; i < 4; i++)
+                            if (candsList[i].Count == 2)
                             {
-                                if (cells[corners[i].r, corners[i].c].IsFixed()) break;
-
-                                if (candsList[i].Count == 2)
+                                if (pair == null)
                                 {
-                                    if (pair == null)
-                                    {
-                                        pair = candsList[i];
-                                        floorCount++;
-                                    }
-                                    else if (candsList[i][0] == pair[0] && candsList[i][1] == pair[1])
-                                    {
-                                        floorCount++;
-                                    }
+                                    pair = candsList[i];
+                                    floorCount++;
                                 }
-                                else if (candsList[i].Count > 2)
+                                else if (candsList[i][0] == pair[0] && candsList[i][1] == pair[1])
                                 {
-                                    roofIdx = i;
+                                    floorCount++;
                                 }
                             }
-
-                            if (pair == null) continue;
-                            if (floorCount != 3) continue;
-                            if (roofIdx == -1) continue;
-
-                            // Roof hücresinde pair dışında başka aday var mı?
-                            var (roofR, roofC) = corners[roofIdx];
-                            List<int> roofCands = allCellCandidates[roofR, roofC];
-
-                            bool hasExtra = roofCands.Any(x => !pair.Contains(x));
-                            if (!hasExtra) continue;
-
-                            // Roof hücresinden pair adaylarını sil
-                            int before = roofCands.Count;
-                            roofCands.RemoveAll(x => pair.Contains(x));
-                            if (roofCands.Count != before) changed = true;
-
-                            break;
+                            else if (candsList[i].Count > 2)
+                            {
+                                roofIdx = i;
+                            }
                         }
+
+                        if (pair == null) continue;
+                        if (floorCount != 3) continue;
+                        if (roofIdx == -1) continue;
+
+                        // Roof hücresinde pair dışında başka aday var mı?
+                        var (roofR, roofC) = corners[roofIdx];
+                        List<int> roofCands = allCellCandidates[roofR, roofC];
+
+                        bool hasExtra = roofCands.Any(x => !pair.Contains(x));
+                        if (!hasExtra) continue;
+
+                        // Roof hücresinden pair adaylarını sil
+                        int before = roofCands.Count;
+                        roofCands.RemoveAll(x => pair.Contains(x));
+                        if (roofCands.Count != before) changed = true;
                     }
                 }
             }
@@ -94,5 +89,4 @@ public class UniqueRectangle
 
         return changed;
     }
-
 }
