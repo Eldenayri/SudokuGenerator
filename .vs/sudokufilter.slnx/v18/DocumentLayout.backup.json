@@ -7,20 +7,20 @@
       "RelativeMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|c:\\users\\e4\\desktop\\sudokufilter\\sudokufilter\\core\\sudokugenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|solutionrelative:core\\sudokugenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|c:\\users\\e4\\desktop\\sudokufilter\\sudokufilter\\techniques\\wwing.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|solutionrelative:techniques\\wwing.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|c:\\users\\e4\\desktop\\sudokufilter\\sudokufilter\\core\\sudokusolver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|solutionrelative:core\\sudokusolver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|c:\\users\\e4\\desktop\\sudokufilter\\sudokufilter\\core\\uniquesolutionchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|solutionrelative:core\\uniquesolutionchecker.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|c:\\users\\e4\\desktop\\sudokufilter\\sudokufilter\\core\\sudokusolver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|solutionrelative:core\\sudokusolver.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|c:\\users\\e4\\desktop\\sudokufilter\\sudokufilter\\core\\sudokugenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|solutionrelative:core\\sudokugenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|c:\\users\\e4\\desktop\\sudokufilter\\sudokufilter\\techniques\\wwing.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|solutionrelative:techniques\\wwing.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E617E4C9-ABCF-5F1F-50E0-B1C72C770014}|sudokufilter.csproj|c:\\users\\e4\\desktop\\sudokufilter\\sudokufilter\\core\\sudokucell.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -38,17 +38,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "SudokuGenerator.cs",
               "DocumentMoniker": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\SudokuGenerator.cs",
               "RelativeDocumentMoniker": "Core\\SudokuGenerator.cs",
               "ToolTip": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\SudokuGenerator.cs",
               "RelativeToolTip": "Core\\SudokuGenerator.cs",
-              "ViewState": "AgIAAHUAAAAAAAAAAAAkwJMAAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAABBAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-28T09:09:32.367Z",
               "EditorCaption": ""
@@ -56,6 +56,45 @@
             {
               "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "UniqueSolutionChecker.cs",
+              "DocumentMoniker": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\UniqueSolutionChecker.cs",
+              "RelativeDocumentMoniker": "Core\\UniqueSolutionChecker.cs",
+              "ToolTip": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\UniqueSolutionChecker.cs",
+              "RelativeToolTip": "Core\\UniqueSolutionChecker.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAowCQAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-27T14:24:35.721Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "SudokuSolver.cs",
+              "DocumentMoniker": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\SudokuSolver.cs",
+              "RelativeDocumentMoniker": "Core\\SudokuSolver.cs",
+              "ToolTip": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\SudokuSolver.cs",
+              "RelativeToolTip": "Core\\SudokuSolver.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAIgAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-27T14:01:18.131Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAEUAAAAAAAAAAAAIwFsAAABGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-27T13:54:35.469Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "WWing.cs",
               "DocumentMoniker": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Techniques\\WWing.cs",
               "RelativeDocumentMoniker": "Techniques\\WWing.cs",
@@ -64,30 +103,6 @@
               "ViewState": "AgIAAAcAAAAAAAAAAAAuwBgAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-27T16:51:24.09Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "UniqueSolutionChecker.cs",
-              "DocumentMoniker": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\UniqueSolutionChecker.cs",
-              "RelativeDocumentMoniker": "Core\\UniqueSolutionChecker.cs",
-              "ToolTip": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\UniqueSolutionChecker.cs",
-              "RelativeToolTip": "Core\\UniqueSolutionChecker.cs",
-              "ViewState": "AgIAABgAAAAAAAAAAAAowCQAAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-27T14:24:35.721Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "SudokuSolver.cs",
-              "DocumentMoniker": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\SudokuSolver.cs",
-              "RelativeDocumentMoniker": "Core\\SudokuSolver.cs",
-              "ToolTip": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Core\\SudokuSolver.cs",
-              "RelativeToolTip": "Core\\SudokuSolver.cs",
-              "ViewState": "AgIAAHIAAAAAAAAAAAAWwIgAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-27T14:01:18.131Z"
             },
             {
               "$type": "Document",
@@ -112,19 +127,6 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-27T13:57:19.516Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Program.cs",
-              "RelativeDocumentMoniker": "Program.cs",
-              "ToolTip": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\Program.cs",
-              "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAEAAAAAAAAAAAAAgwFsAAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-27T13:54:35.469Z",
-              "EditorCaption": ""
             }
           ]
         }

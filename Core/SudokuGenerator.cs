@@ -19,7 +19,7 @@ namespace SudokuFilter
                 string fullSolution = GenerateFullBoard();
 
                 // 2. Rastgele delikler aç (kolay ve zor hepsi çıksın diye geniş bir aralık)
-                int cellsToRemove = random.Next(50, 60);
+                int cellsToRemove = random.Next(55, 60);
                 string puzzle = DigHoles(fullSolution, cellsToRemove);
 
                 // 3. Tek çözümü var mı diye kontrol et (Kendi bitwise hızlandırıcınız ile)

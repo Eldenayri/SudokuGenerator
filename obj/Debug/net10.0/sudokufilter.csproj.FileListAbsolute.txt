@@ -12,3 +12,4 @@ C:\Users\e4\Desktop\sudokufilter\sudokufilter\obj\Debug\net10.0\refint\sudokufil
 C:\Users\e4\Desktop\sudokufilter\sudokufilter\obj\Debug\net10.0\sudokufilter.pdb
 C:\Users\e4\Desktop\sudokufilter\sudokufilter\obj\Debug\net10.0\sudokufilter.genruntimeconfig.cache
 C:\Users\e4\Desktop\sudokufilter\sudokufilter\obj\Debug\net10.0\ref\sudokufilter.dll
+C:\Users\e4\Desktop\sudokufilter\sudokufilter\obj\Debug\net10.0\sudokufilter.sourcelink.json
