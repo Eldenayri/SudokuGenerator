@@ -12,7 +12,7 @@ using System.Threading;
         "..", "..", "..", "output" );
         private const int TargetPerLevel = 3000;
         private const int LevelCount = 6;
-        private const int ProgressInterval = 100;
+        private const int ProgressInterval = 10;
 
         private static volatile bool stopRequested = false;
 
@@ -133,7 +133,7 @@ using System.Threading;
 
         // --- YARDIMCI METOTLAR ---
 
-        static void ClearLines(int lineCount)
+        /*static void ClearLines(int lineCount)
         {
             // FIX 2: Konsol yönlendirilmişse exception fırlatabilir, try-catch ile koru
             try
@@ -145,10 +145,23 @@ using System.Threading;
                     Console.CursorLeft = 0;
                 }
             }
-            catch { /* Yönlendirme veya dar terminal durumunda sessizce geç */ }
-        }
+            catch {  Yönlendirme veya dar terminal durumunda sessizce geç  }
+        }*/
 
-        static int PrintProgress(long total, long written, int[] counts)
+    static void ClearLines(int lineCount)
+    {
+        try
+        {
+            for (int i = 0; i < lineCount; i++)
+            {
+                Console.Write("\x1B[1A"); // 1 satır yukarı çık
+                Console.Write("\x1B[2K"); // satırı tamamen sil
+            }
+        }
+    catch { }
+    }
+    
+    static int PrintProgress(long total, long written, int[] counts)
         {
             int lines = 0;
             void W(string s) { Console.WriteLine(s); lines++; }
