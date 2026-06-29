@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("sudokufilter")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c93bef415b3e501c80b7b1ad6ec71321276472f7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f8ddcc0c23e58e1ad701655fea088f99e4d0f455")]
 [assembly: System.Reflection.AssemblyProductAttribute("sudokufilter")]
 [assembly: System.Reflection.AssemblyTitleAttribute("sudokufilter")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

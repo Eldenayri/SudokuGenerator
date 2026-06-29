@@ -6,10 +6,13 @@ using System.Threading;
 
     class Program
     {
-        private const string OutputDir = "output";
+    //private const string OutputDir = "output";
+        private static string OutputDir = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory,
+        "..", "..", "..", "output" );
         private const int TargetPerLevel = 3000;
         private const int LevelCount = 6;
-        private const int ProgressInterval = 1000;
+        private const int ProgressInterval = 100;
 
         private static volatile bool stopRequested = false;
 

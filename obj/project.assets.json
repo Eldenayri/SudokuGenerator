@@ -8,19 +8,19 @@
     "net10.0": []
   },
   "packageFolders": {
-    "C:\\Users\\e4\\.nuget\\packages\\": {}
+    "C:\\Users\\E4\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\sudokufilter.csproj",
+      "projectUniqueName": "C:\\Users\\E4\\Desktop\\Generate\\SudokuGenerator\\sudokufilter.csproj",
       "projectName": "sudokufilter",
-      "projectPath": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\sudokufilter.csproj",
-      "packagesPath": "C:\\Users\\e4\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\e4\\Desktop\\sudokufilter\\sudokufilter\\obj\\",
+      "projectPath": "C:\\Users\\E4\\Desktop\\Generate\\SudokuGenerator\\sudokufilter.csproj",
+      "packagesPath": "C:\\Users\\E4\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\E4\\Desktop\\Generate\\SudokuGenerator\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\e4\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\E4\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
