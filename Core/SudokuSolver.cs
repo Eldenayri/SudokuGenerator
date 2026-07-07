@@ -1,35 +1,59 @@
+using System;
 using System.Collections.Generic;
 
 
     public class SudokuSolver
     {
-        private BasicCalculate basicCalculate = new BasicCalculate();
-        private NakedPairs nakedPairs = new NakedPairs();
-        private HiddenPairs hiddenPairs = new HiddenPairs();
-        private PointingPairs pointingPairs = new PointingPairs();
-        private BoxLineReduction boxLineReduction = new BoxLineReduction();
-        private XWing xWing = new XWing();
-        private Swordfish swordfish = new Swordfish();
-        private NakedTriples nakedTriples = new NakedTriples();
-        private HiddenTriples hiddenTriples = new HiddenTriples();
-        private YWing yWing = new YWing();
-        private XYZWing xYZWing = new XYZWing();
-        private UniqueRectangle uniqueRectangle = new UniqueRectangle();
-        private Skyscraper skyscraper = new Skyscraper();
-        private XYChain xYChain = new XYChain();
-        private NakedQuads nakedQuads = new NakedQuads();
-        private HiddenQuads hiddenQuads = new HiddenQuads();
-        private WWing wWing = new WWing();
-        private JellyFish jellyfish = new JellyFish();
-        private SimpleColouring simpleColouring = new SimpleColouring();
-        private BUG bug = new BUG();
-
-        public SolveResult Solve(string puzzle)
+        private class TechniqueSpec
         {
+            public string Name;
+            public int Tier;
+            public Func<List<int>[,], SudokuCell[,], bool> Fill;
+        }
+
+        private BasicCalculate basicCalculate = new BasicCalculate();
+        private readonly List<TechniqueSpec> techniques;
+
+        public SudokuSolver()
+        {
+            var instances = new Dictionary<string, Func<List<int>[,], SudokuCell[,], bool>>
+            {
+                ["NakedPairs"] = new NakedPairs().Fill,
+                ["HiddenPairs"] = new HiddenPairs().Fill,
+                ["PointingPairs"] = new PointingPairs().Fill,
+                ["BoxLineReduction"] = new BoxLineReduction().Fill,
+                ["XWing"] = new XWing().Fill,
+                ["NakedTriples"] = new NakedTriples().Fill,
+                ["HiddenTriples"] = new HiddenTriples().Fill,
+                ["YWing"] = new YWing().Fill,
+                ["Swordfish"] = new Swordfish().Fill,
+                ["NakedQuads"] = new NakedQuads().Fill,
+                ["HiddenQuads"] = new HiddenQuads().Fill,
+                ["Skyscraper"] = new Skyscraper().Fill,
+                ["XYZWing"] = new XYZWing().Fill,
+                ["UniqueRectangle"] = new UniqueRectangle().Fill,
+                ["Jellyfish"] = new JellyFish().Fill,
+                ["WWing"] = new WWing().Fill,
+                ["XYChain"] = new XYChain().Fill,
+                ["SimpleColouring"] = new SimpleColouring().Fill,
+            };
+
+            var bug = new BUG();
+            instances["BUG"] = (cand, cells) => bug.Fill(cand, cells, basicCalculate);
+
+            techniques = new List<TechniqueSpec>();
+            foreach (var (name, tier) in TechniqueCatalog.All)
+                techniques.Add(new TechniqueSpec { Name = name, Tier = tier, Fill = instances[name] });
+        }
+
+        // disabledTechniques null/boş ise tam cephanelikle (varsayılan davranış) çözer.
+        public SolveResult Solve(string puzzle, ISet<string> disabledTechniques = null)
+        {
+            disabledTechniques ??= new HashSet<string>();
+
             var cells = new SudokuCell[9, 9];
             var allCellCandidates = new List<int>[9, 9];
 
-            // Puzzle'ı yükle
             for (int r = 0; r < 9; r++)
             {
                 for (int c = 0; c < 9; c++)
@@ -41,17 +65,12 @@ using System.Collections.Generic;
                 }
             }
 
-            // İlk aday hesaplama
             basicCalculate.CalculateCandidates(allCellCandidates, cells);
 
             var result = new SolveResult();
 
             while (true)
             {
-                // FIX 3: Artık her döngüde ReCalculateCandidates YOK.
-                // NakedSingle/HiddenSingle yerleştirince UpdateNeighbours çağırıyor,
-                // teknikler ise zaten aday siliyor — ReCalculate sadece teknikler sonrası gerekirse çağrılır.
-
                 if (FillNakedSingle(allCellCandidates, cells))
                 {
                     if (IsSolved(cells)) { result.Solved = true; break; }
@@ -64,27 +83,22 @@ using System.Collections.Generic;
                     continue;
                 }
 
-                // Teknikler aday siler; birisi başarılı olursa başa dön
-                // (teknikler kendi içinde aday siliyor, ReCalculate gerekmez)
-                if (nakedPairs.Fill(allCellCandidates, cells)) { result.NakedPairs++; continue; }
-                if (hiddenPairs.Fill(allCellCandidates, cells)) { result.HiddenPairs++; continue; }
-                if (pointingPairs.Fill(allCellCandidates, cells)) { result.PointingPairs++; continue; }
-                if (boxLineReduction.Fill(allCellCandidates, cells)) { result.BoxLineReduction++; continue; }
-                if (xWing.Fill(allCellCandidates, cells)) { result.XWing++; continue; }
-                if (swordfish.Fill(allCellCandidates, cells)) { result.Swordfish++; continue; }
-                if (nakedTriples.Fill(allCellCandidates, cells)) { result.NakedTriples++; continue; }
-                if (hiddenTriples.Fill(allCellCandidates, cells)) { result.HiddenTriples++; continue; }
-                if (yWing.Fill(allCellCandidates, cells)) { result.YWing++; continue; }
-                if (xYZWing.Fill(allCellCandidates, cells)) { result.XYZWing++; continue; }
-                if (uniqueRectangle.Fill(allCellCandidates, cells)) { result.UniqueRectangle++; continue; }
-                if (skyscraper.Fill(allCellCandidates, cells)) { result.Skyscraper++; continue; }
-                if (xYChain.Fill(allCellCandidates, cells)) { result.XYChain++; continue; }
-                if (nakedQuads.Fill(allCellCandidates, cells)) { result.NakedQuads++; continue; }
-                if (hiddenQuads.Fill(allCellCandidates, cells)) { result.HiddenQuads++; continue; }
-                if (wWing.Fill(allCellCandidates, cells)) { result.WWing++; continue; }
-                if (jellyfish.Fill(allCellCandidates, cells)) { result.Jellyfish++; continue; }
-                if (simpleColouring.Fill(allCellCandidates, cells)) { result.SimpleColouring++; continue; }
-                if (bug.Fill(allCellCandidates, cells, basicCalculate)) { result.BUG++; continue; }
+                // Teknikler tier sırasıyla (kolaydan zora) denenir; ilk işe yarayan
+                // uygulanır ve döngü başa döner. Sıra, zorluk derecelendirmesinin
+                // doğru olması için kritik — asla zor bir teknik kolay bir tekniğin
+                // önüne geçmemeli.
+                bool techniqueApplied = false;
+                foreach (var spec in techniques)
+                {
+                    if (disabledTechniques.Contains(spec.Name)) continue;
+                    if (spec.Fill(allCellCandidates, cells))
+                    {
+                        result.Increment(spec.Name);
+                        techniqueApplied = true;
+                        break;
+                    }
+                }
+                if (techniqueApplied) continue;
 
                 break; // Hiçbir teknik işe yaramadı, puzzle çözülemedi
             }
@@ -104,7 +118,19 @@ using System.Collections.Generic;
             return result;
         }
 
-        // FIX 3: Hücre yerleştirince UpdateNeighbours ile komşuları güncelle
+        // Bir teknik, verilen tier'de gerçekten zorunlu mu? Test: o teknik VE ondan
+        // zor (tier > tier) her şey kapatılır, aynı tier'deki emsalleri ve daha
+        // kolay teknikler açık kalır. Çözülemiyorsa teknik zorunludur.
+        public bool IsTechniqueRequired(string puzzle, string techniqueName, int tier)
+        {
+            var disabled = new HashSet<string> { techniqueName };
+            foreach (var (name, t) in TechniqueCatalog.All)
+                if (t > tier) disabled.Add(name);
+
+            var result = Solve(puzzle, disabled);
+            return !result.Solved;
+        }
+
         private void PlaceValue(int r, int c, int val,
                                 List<int>[,] allCellCandidates, SudokuCell[,] cells)
         {
@@ -181,7 +207,6 @@ using System.Collections.Generic;
             return false;
         }
 
-        // FIX 5: GetValue() == 0 kontrolü eklendi — fixed ama değersiz hücreye karşı güvenlik
         private bool IsSolved(SudokuCell[,] cells)
         {
             for (int r = 0; r < 9; r++)
@@ -192,16 +217,6 @@ using System.Collections.Generic;
         }
 
         private int CalculateDifficulty(SolveResult r)
-        {
-            if (!r.Solved) return -1;
-
-            if (r.XYChain > 0)
-                return 1;
-
-            return -1;
-        }
-
-        /*private int CalculateDifficulty(SolveResult r)
         {
             if (!r.Solved) return -1;
 
@@ -221,5 +236,5 @@ using System.Collections.Generic;
                 return 2;
 
             return 1;
-        }*/
+        }
     }

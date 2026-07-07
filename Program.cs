@@ -1,152 +1,265 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
-    class Program
-    {
-    //private const string OutputDir = "output";
-        private static string OutputDir = Path.Combine(
+class Program
+{
+    private static string OutputDir = Path.Combine(
         AppDomain.CurrentDomain.BaseDirectory,
-        "..", "..", "..", "output" );
-        private const int TargetPerLevel = 3000;
-        private const int LevelCount = 6;
-        private const int ProgressInterval = 10;
+        "..", "..", "..", "output");
 
-        private static volatile bool stopRequested = false;
+    private const int TargetPerBucket = 1000;
+    private const int ProgressIntervalMs = 2000;
 
-        static void Main()
+    private static volatile bool stopRequested = false;
+
+    // Kova tanımları: Level1 = "Singles" (ileri teknik gerektirmez) + TechniqueCatalog'daki
+    // her teknik kendi tier'ında bir kova. Tek doğruluk kaynağı TechniqueCatalog'dur.
+    private static readonly List<(int Level, string Technique)> BucketKeys = BuildBucketKeys();
+
+    private static readonly Dictionary<(int Level, string Technique), int[]> counters =
+        BucketKeys.ToDictionary(k => k, _ => new int[1]);
+    // BUG hedefi 0: ölçümle doğrulandı ki bu teknik hiyerarşisinde BUG, aynı tier'deki
+    // WWing/XYChain tarafından yapısal olarak gölgede bırakılıyor (WWing/XYChain tier-6
+    // durumların çoğunda BUG'dan önce zaten çözüyor) — emsalleri açıkken tek başına
+    // zorunlu olduğu bir puzzle bulmak neredeyse imkansız. Hedefi 0 yaparak program
+    // sonsuza kadar bu kovayı beklemeden diğer 19 kova dolunca doğal olarak bitebiliyor.
+    private static readonly Dictionary<(int Level, string Technique), int> targets =
+        BucketKeys.ToDictionary(k => k, k => k.Technique == "BUG" ? 0 : TargetPerBucket);
+
+    private static readonly StreamWriter[] writers = new StreamWriter[7]; // index 1..6
+    private static readonly object[] levelLocks =
+        { new object(), new object(), new object(), new object(), new object(), new object(), new object() };
+
+    private static long totalBoards = 0;
+    private static long totalDigSteps = 0;
+    private static long totalWritten = 0;
+
+    static List<(int, string)> BuildBucketKeys()
+    {
+        var list = new List<(int, string)> { (1, "Singles") };
+        foreach (var (name, tier) in TechniqueCatalog.All)
+            list.Add((tier, name));
+        return list;
+    }
+
+    static void Main()
+    {
+        Directory.CreateDirectory(OutputDir);
+
+        // 1. Durdurma tuşu için arka plan thread
+        Thread inputThread = new Thread(() =>
         {
-            Directory.CreateDirectory(OutputDir);
-
-            // 1. Durdurma tuşu için arka plan thread
-            Thread inputThread = new Thread(() =>
-            {
-                Console.WriteLine("Durdurmak için 'Q' tuşuna bas.");
-                Console.WriteLine();
-                while (!stopRequested)
-                {
-                    try
-                    {
-                        if (Console.KeyAvailable)
-                        {
-                            var key = Console.ReadKey(intercept: true);
-                            if (key.Key == ConsoleKey.Q)
-                            {
-                                stopRequested = true;
-                                Console.WriteLine();
-                                Console.WriteLine(">>> Durdurma isteği alındı, mevcut işlemler tamamlanıp çıkılacak...");
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // Konsol yönlendirilmişse (örn: > out.txt) KeyAvailable exception fırlatır, sessizce çık
-                        break;
-                    }
-                    Thread.Sleep(100);
-                }
-            });
-            inputThread.IsBackground = true;
-            inputThread.Start();
-
-            // 2. Her seviye için writer ve sayaç oluşturma (Dosyadan Okuma ve Ekleme Modu)
-            var writers = new StreamWriter[LevelCount + 1];
-            var counts = new int[LevelCount + 1];
-
-            for (int i = 1; i <= LevelCount; i++)
-            {
-                string path = Path.Combine(OutputDir, $"level{i}.csv");
-
-                if (File.Exists(path))
-                {
-                    // FIX 1: Boş satırları saymıyoruz (trailing newline sorunu)
-                    counts[i] = File.ReadAllLines(path).Count(l => l.Trim().Length > 0);
-                }
-                else
-                {
-                    counts[i] = 0;
-                }
-
-                // Append modu: mevcut dosyaya ekleme yapar, yoksa oluşturur
-                writers[i] = new StreamWriter(path, append: true, new UTF8Encoding(false));
-            }
-
-            // 3. Sudoku Jeneratörümüzü başlatıyoruz
-            var generator = new SudokuGenerator();
-
-            long totalGenerated = 0;
-            long written = 0;
-            int progressLineCount = 0;
-
-            progressLineCount = PrintProgress(totalGenerated, written, counts);
-
-            // 4. Ana Döngü
+            Console.WriteLine("Durdurmak için 'Q' tuşuna bas.");
+            Console.WriteLine();
             while (!stopRequested)
             {
-                if (AllLevelsFull(counts)) break;
-
-                var (puzzle, solution, level) = generator.GenerateOne();
-                totalGenerated++;
-
-                if (level >= 1 && level <= LevelCount && counts[level] < TargetPerLevel)
+                try
                 {
-                    string csvLine = $"{puzzle},{solution},{level}";
-                    writers[level].WriteLine(csvLine);
-                    writers[level].Flush();
-                    counts[level]++;
-                    written++;
-
-                    // FIX 5: Son puzzle yazıldıktan hemen sonra döngüyü bitir,
-                    // gereksiz GenerateOne() çağrısı yapma
-                    if (AllLevelsFull(counts)) break;
+                    if (Console.KeyAvailable)
+                    {
+                        var key = Console.ReadKey(intercept: true);
+                        if (key.Key == ConsoleKey.Q)
+                        {
+                            stopRequested = true;
+                            Console.WriteLine();
+                            Console.WriteLine(">>> Durdurma isteği alındı, mevcut işlemler tamamlanıp çıkılacak...");
+                        }
+                    }
                 }
-
-                if (totalGenerated % ProgressInterval == 0)
+                catch
                 {
-                    ClearLines(progressLineCount);
-                    progressLineCount = PrintProgress(totalGenerated, written, counts);
+                    break;
+                }
+                Thread.Sleep(100);
+            }
+        });
+        inputThread.IsBackground = true;
+        inputThread.Start();
+
+        // 2. Var olan levelN.csv'ler varsa: içindeki satırları (4. kolon = teknik adı)
+        // sayıp ilgili kovanın sayacını oradan başlatır, sonra dosyaya EKLEME (append)
+        // modunda devam eder. Böylece program kapatılıp yeniden açılınca kaldığı
+        // yerden sürer, daha önce bulunan satırlar kaybolmaz/silinmez.
+        for (int level = 1; level <= 6; level++)
+        {
+            string path = Path.Combine(OutputDir, $"level{level}.csv");
+
+            if (File.Exists(path))
+            {
+                foreach (string line in File.ReadLines(path))
+                {
+                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    string[] parts = line.Split(',');
+                    if (parts.Length < 4) continue;
+                    if (!int.TryParse(parts[2], out int lineLevel)) continue;
+
+                    var key = (lineLevel, parts[3].Trim());
+                    if (counters.TryGetValue(key, out int[] counter))
+                        counter[0]++;
                 }
             }
 
-            // FIX 4: Close() yerine Dispose() — daha güvenli kaynak serbest bırakma
-            for (int i = 1; i <= LevelCount; i++)
-                writers[i]?.Dispose();
-
-            ClearLines(progressLineCount);
-            Console.WriteLine();
-            Console.WriteLine(stopRequested
-                ? "=== Q TUŞU İLE DURDURULDU ==="
-                : "=== TÜM SEVİYELER BAŞARIYLA TAMAMLANDI ===");
-            Console.WriteLine($"Bu Oturumda Üretilip Test Edilen : {totalGenerated}");
-            Console.WriteLine($"Bu Oturumda Diske Eklenen        : {written}");
-            Console.WriteLine();
-            Console.WriteLine("Dosyalardaki SON DURUM (Toplam):");
-            for (int i = 1; i <= LevelCount; i++)
-                Console.WriteLine($"  Level {i}: {counts[i]}/{TargetPerLevel}");
-
-            Console.WriteLine();
-            Console.WriteLine("Çıkmak için bir tuşa bas.");
-            Console.ReadKey();
+            writers[level] = new StreamWriter(path, append: true, new UTF8Encoding(false));
         }
 
-        // --- YARDIMCI METOTLAR ---
+        var sw = Stopwatch.StartNew();
+        int progressLineCount = PrintProgress(sw.ElapsedMilliseconds);
+        var lastProgress = Stopwatch.StartNew();
 
-        /*static void ClearLines(int lineCount)
+        // 3. Çoklu thread worker'lar
+        int workerCount = Math.Max(1, Environment.ProcessorCount);
+        var workers = new Task[workerCount];
+        for (int w = 0; w < workerCount; w++)
+            workers[w] = Task.Run(WorkerLoop);
+
+        // 4. Ana thread sadece ilerlemeyi basar ve bitiş koşulunu bekler
+        while (!stopRequested && !AllBucketsFull())
         {
-            // FIX 2: Konsol yönlendirilmişse exception fırlatabilir, try-catch ile koru
-            try
+            if (lastProgress.ElapsedMilliseconds > ProgressIntervalMs)
             {
-                for (int i = 0; i < lineCount; i++)
-                {
-                    Console.CursorTop = Math.Max(0, Console.CursorTop - 1);
-                    Console.Write(new string(' ', Console.WindowWidth));
-                    Console.CursorLeft = 0;
-                }
+                ClearLines(progressLineCount);
+                progressLineCount = PrintProgress(sw.ElapsedMilliseconds);
+                lastProgress.Restart();
             }
-            catch {  Yönlendirme veya dar terminal durumunda sessizce geç  }
-        }*/
+            Thread.Sleep(200);
+        }
+        stopRequested = true;
+
+        Task.WaitAll(workers);
+
+        for (int level = 1; level <= 6; level++)
+            writers[level]?.Dispose();
+
+        ClearLines(progressLineCount);
+        Console.WriteLine();
+        Console.WriteLine(AllBucketsFull()
+            ? "=== TÜM KOVALAR DOLDU ==="
+            : "=== Q TUŞU İLE DURDURULDU ===");
+        Console.WriteLine($"Toplam üretilen tam tahta   : {totalBoards}");
+        Console.WriteLine($"Toplam denenen (delik) adım : {totalDigSteps}");
+        Console.WriteLine($"Diske yazılan bulmaca       : {totalWritten}");
+        Console.WriteLine();
+        PrintProgress(sw.ElapsedMilliseconds, permanent: true);
+
+        Console.WriteLine();
+        Console.WriteLine("Çıkmak için bir tuşa bas.");
+        Console.ReadKey();
+    }
+
+    // --- WORKER ---
+
+    static void WorkerLoop()
+    {
+        // Her worker kendi solver/generator/random örneğini kullanır (thread-safety).
+        var solver = new SudokuSolver();
+        var classifier = new PuzzleClassifier(solver);
+        var generator = new SudokuGenerator();
+
+        while (!stopRequested && !AllBucketsFull())
+        {
+            Interlocked.Increment(ref totalBoards);
+
+            // Bir tier'da art arda birden fazla adım kalınabilir (delik açtıkça hâlâ
+            // aynı teknik yetiyor); ilk yakalanan anı değil, o tier'de kalınan EN DERİN
+            // (en çok boş hücreli) anı kaydetmek istiyoruz. Bu yüzden bir adım geriden
+            // takip edip ("pending"), tier değiştiği ya da çözülemez hale geldiği anda
+            // bir önceki (en derin) durumu değerlendiriyoruz.
+            SolveResult pendingNatural = null;
+            string pendingPuzzle = null, pendingSolution = null;
+            HashSet<(int Level, string Technique)> pendingOpen = null;
+
+            void Flush()
+            {
+                if (pendingNatural == null) return;
+                TryAssignAndWrite(classifier, pendingPuzzle, pendingSolution, pendingNatural, pendingOpen);
+                pendingNatural = null;
+            }
+
+            foreach (var (puzzle, solution) in generator.DigProgressively())
+            {
+                Interlocked.Increment(ref totalDigSteps);
+
+                if (stopRequested) break;
+
+                var open = OpenBucketsSnapshot();
+                if (open.Count == 0) break;
+
+                var natural = classifier.SolveNatural(puzzle);
+
+                bool ceilingChanged = pendingNatural != null &&
+                    (!natural.Solved || natural.DifficultyLevel != pendingNatural.DifficultyLevel);
+                if (ceilingChanged) Flush();
+
+                if (!natural.Solved) break; // çözülemez oldu, bu daldan daha derine inmenin anlamı yok
+
+                pendingNatural = natural;
+                pendingPuzzle = puzzle;
+                pendingSolution = solution;
+                pendingOpen = open;
+            }
+
+            Flush(); // dal doğal olarak bitti (delik tükendi) ya da yukarıda zaten boşaltıldı (no-op)
+        }
+    }
+
+    static void TryAssignAndWrite(PuzzleClassifier classifier, string puzzle, string solution,
+        SolveResult natural, ISet<(int Level, string Technique)> openBuckets)
+    {
+        var match = classifier.Assign(puzzle, natural, openBuckets);
+        if (match == null) return;
+
+        var key = match.Value;
+        if (!TryClaim(key)) return;
+
+        WriteResult(key.Level, puzzle, solution, key.Technique);
+        Interlocked.Increment(ref totalWritten);
+    }
+
+    static HashSet<(int Level, string Technique)> OpenBucketsSnapshot()
+    {
+        var set = new HashSet<(int Level, string Technique)>();
+        foreach (var key in BucketKeys)
+            if (Volatile.Read(ref counters[key][0]) < targets[key])
+                set.Add(key);
+        return set;
+    }
+
+    static bool TryClaim((int Level, string Technique) key)
+    {
+        var counter = counters[key];
+        int target = targets[key];
+        while (true)
+        {
+            int current = Volatile.Read(ref counter[0]);
+            if (current >= target) return false;
+            if (Interlocked.CompareExchange(ref counter[0], current + 1, current) == current) return true;
+        }
+    }
+
+    static bool AllBucketsFull()
+    {
+        foreach (var key in BucketKeys)
+            if (Volatile.Read(ref counters[key][0]) < targets[key]) return false;
+        return true;
+    }
+
+    static void WriteResult(int level, string puzzle, string solution, string technique)
+    {
+        string line = $"{puzzle},{solution},{level},{technique}";
+        lock (levelLocks[level])
+        {
+            writers[level].WriteLine(line);
+            writers[level].Flush();
+        }
+    }
+
+    // --- İLERLEME EKRANI ---
 
     static void ClearLines(int lineCount)
     {
@@ -158,28 +271,25 @@ using System.Threading;
                 Console.Write("\x1B[2K"); // satırı tamamen sil
             }
         }
-    catch { }
+        catch { }
     }
-    
-    static int PrintProgress(long total, long written, int[] counts)
+
+    static int PrintProgress(long elapsedMs, bool permanent = false)
+    {
+        int lines = 0;
+        void W(string s) { Console.WriteLine(s); lines++; }
+
+        long sec = elapsedMs / 1000;
+        W($"Süre: {sec,6}sn   Tahta: {Volatile.Read(ref totalBoards),10}   Denenen adım: {Volatile.Read(ref totalDigSteps),10}   Yazılan: {Volatile.Read(ref totalWritten),6}");
+
+        for (int level = 1; level <= 6; level++)
         {
-            int lines = 0;
-            void W(string s) { Console.WriteLine(s); lines++; }
-
-            W($"Şu an Üretilen : {total,10}   Bu Oturumda Eklenen : {written,6}");
-
-            string levelLine = "Veritabanı Durumu :";
-            for (int i = 1; i <= LevelCount; i++)
-                levelLine += $"  L{i}={counts[i],4}/{TargetPerLevel}";
-            W(levelLine);
-
-            return lines;
+            var levelBuckets = BucketKeys.Where(k => k.Level == level);
+            string row = $"L{level}: " + string.Join("  ", levelBuckets.Select(k =>
+                $"{k.Technique}={Volatile.Read(ref counters[k][0])}/{targets[k]}"));
+            W(row);
         }
 
-        static bool AllLevelsFull(int[] counts)
-        {
-            for (int i = 1; i <= LevelCount; i++)
-                if (counts[i] < TargetPerLevel) return false;
-            return true;
-        }
+        return lines;
     }
+}

@@ -5,34 +5,37 @@ using System.Linq;
 
     public class SudokuGenerator
     {
-        private Random random = new Random();
-        private SudokuSolver grader = new SudokuSolver();
+        private readonly Random random;
         private const int AllDigitsMask = 0x1FF;
 
-        // İşte kırmızı çizgileri yok edecek olan, Tuple döndüren doğru metot:
-        public (string Puzzle, string Solution, int Difficulty) GenerateOne()
+        // random verilmezse thread'e özgü, birbirinden bağımsız bir tohum kullanılır
+        // (çoklu thread'de paylaşılan/varsayılan Random güvenli değildir).
+        public SudokuGenerator(Random random = null)
         {
-            while (true)
+            this.random = random ?? new Random(Guid.NewGuid().GetHashCode());
+        }
+
+        // Tam dolu bir tahtadan başlayıp hücreleri (tekillik bozulmadıkça) teker
+        // teker boşaltır. Her kabul edilen adımda bir öncekinden bir tık daha zor
+        // olan (puzzle, solution) çiftini döndürür. Tek bir tam tahtadan onlarca
+        // giderek zorlaşan durum elde edilir; bu da nadir tekniklere rastlama
+        // olasılığını kör rastgele delik açmaya göre büyük ölçüde artırır.
+        public IEnumerable<(string Puzzle, string Solution)> DigProgressively()
+        {
+            string fullSolution = GenerateFullBoard();
+            string current = fullSolution;
+
+            var positions = Enumerable.Range(0, 81).OrderBy(_ => random.Next()).ToList();
+
+            foreach (int pos in positions)
             {
-                // 1. Tam dolu bir tahta üret
-                string fullSolution = GenerateFullBoard();
+                if (current[pos] == '0') continue;
 
-                // 2. Rastgele delikler aç (kolay ve zor hepsi çıksın diye geniş bir aralık)
-                int cellsToRemove = random.Next(45, 55);
-                string puzzle = DigHoles(fullSolution, cellsToRemove);
+                string trial = current.Remove(pos, 1).Insert(pos, "0");
+                if (HasAlternativeSolution(trial, fullSolution)) continue;
 
-                // 3. Tek çözümü var mı diye kontrol et (Kendi bitwise hızlandırıcınız ile)
-                if (!HasAlternativeSolution(puzzle, fullSolution))
-                {
-                    // 4. Sizin çözücü ile çöz ve zorluğunu öğren
-                    var result = grader.Solve(puzzle);
-
-                    // Eğer çözücü başarıyla çözdüyse ve 1 ile 6 arası bir zorluk verdiyse bunu Main'e yolla
-                    if (result.Solved && result.DifficultyLevel >= 1 && result.DifficultyLevel <= 6)
-                    {
-                        return (puzzle, fullSolution, result.DifficultyLevel);
-                    }
-                }
+                current = trial;
+                yield return (current, fullSolution);
             }
         }
 
@@ -58,14 +61,6 @@ using System.Linq;
                 }
             }
             return false;
-        }
-
-        private string DigHoles(string fullBoard, int removeCount)
-        {
-            char[] puzzle = fullBoard.ToCharArray();
-            List<int> positions = Enumerable.Range(0, 81).OrderBy(x => random.Next()).ToList();
-            for (int i = 0; i < removeCount; i++) puzzle[positions[i]] = '0';
-            return new string(puzzle);
         }
 
         private bool IsValidPlacement(int[] board, int index, int digit)
