@@ -195,6 +195,16 @@ using System.Collections.Generic;
         {
             if (!r.Solved) return -1;
 
+            if (r.XYChain > 0)
+                return 1;
+
+            return -1;
+        }
+
+        /*private int CalculateDifficulty(SolveResult r)
+        {
+            if (!r.Solved) return -1;
+
             if (r.Jellyfish > 0 || r.WWing > 0 || r.XYChain > 0 || r.SimpleColouring > 0 || r.BUG > 0)
                 return 6;
 
@@ -211,5 +221,5 @@ using System.Collections.Generic;
                 return 2;
 
             return 1;
-        }
+        }*/
     }

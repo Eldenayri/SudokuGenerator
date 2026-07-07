@@ -33,7 +33,12 @@ public class SimpleColouring
             {
                 if (colour[startNode] != 0) continue; // Zaten boyanmış
 
-                // BFS ile bu bileşeni boya
+                // BFS ile bu bileşeni boya - componentNodes SADECE bu BFS'te
+                // ziyaret edilen düğümleri tutar; colourA/colourB bundan
+                // kurulacağı için, colour sözlüğünde başka bileşenlerden kalma
+                // (sıfırlanmamış) değerler olsa BİLE bu bileşenin sonucunu
+                // etkilemez - reset'e bağımlı olmayan, yapısal olarak doğru bir yöntem.
+                List<(int, int)> componentNodes = new List<(int, int)> { startNode };
                 Queue<(int, int)> queue = new Queue<(int, int)>();
                 queue.Enqueue(startNode);
                 colour[startNode] = 1; // Renk A
@@ -48,19 +53,18 @@ public class SimpleColouring
                         if (colour[neighbour] == 0)
                         {
                             colour[neighbour] = nextColour;
+                            componentNodes.Add(neighbour);
                             queue.Enqueue(neighbour);
                         }
                     }
                 }
 
-                // Bu bileşendeki renk 1 ve renk 2 hücrelerini topla
-                // FIX: colour.Keys tüm node'ları içeriyor (tüm bileşenler).
-                // Sadece bu bileşene ait node'ları almak için startNode'dan
-                // ulaşılabilenleri filtrele.
+                // Bu bileşendeki renk 1 ve renk 2 hücrelerini topla - SADECE
+                // componentNodes'tan (bu BFS'in ziyaret ettiği düğümlerden).
                 List<(int, int)> colourA = new List<(int, int)>();
                 List<(int, int)> colourB = new List<(int, int)>();
 
-                foreach (var node in graph.Keys)
+                foreach (var node in componentNodes)
                 {
                     if (colour[node] == 1) colourA.Add(node);
                     else if (colour[node] == 2) colourB.Add(node);
@@ -106,10 +110,14 @@ public class SimpleColouring
                     }
                 }
 
-                // FIX: "foreach (var node in colour.Keys.ToList()) colour[node] = 0;" satırı
-                // KALDIRILDI. Bu satır her startNode iterasyonunda tüm renkleri sıfırlıyordu,
-                // önceki bileşenlerin boyamasını bozuyordu. BFS zaten colour[node]==0 olan
-                // node'lardan başladığı için sıfırlamaya gerek yok.
+                // Bir sonraki bileşen için renkleri sıfırla. Bu satır olmadan,
+                // Kural 4 sonrası (Kural 2 tetiklenmeden geçen bileşenlerde) colour
+                // sözlüğü bir önceki bileşenin renklerini taşımaya devam eder; bu da
+                // sonraki bileşen işlenirken colourA/colourB'nin İKİ AYRI, İLGİSİZ
+                // bileşenin hücrelerini birleştirmesine yol açar. Böyle birleşmiş bir
+                // grupta tesadüfen aynı satır/sütun/blokta olan iki hücre "aynı renk
+                // çelişkisi" (Kural 2) olarak yanlış algılanıp geçersiz bir eleme yapılır.
+                foreach (var node in colour.Keys.ToList()) colour[node] = 0;
             }
         }
 
