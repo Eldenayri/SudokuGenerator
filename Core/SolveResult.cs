@@ -4,6 +4,8 @@ public class SolveResult
 {
     public bool Solved { get; set; }
     public int DifficultyLevel { get; set; } // 1-6
+    public int NakedSingle { get; set; }
+    public int HiddenSingle { get; set; }
     public int NakedPairs { get; set; }
     public int NakedTriples { get; set; }
     public int NakedQuads { get; set; }

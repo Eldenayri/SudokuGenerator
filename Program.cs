@@ -18,8 +18,8 @@ class Program
 
     private static volatile bool stopRequested = false;
 
-    // Kova tanımları: Level1 = "Singles" (ileri teknik gerektirmez) + TechniqueCatalog'daki
-    // her teknik kendi tier'ında bir kova. Tek doğruluk kaynağı TechniqueCatalog'dur.
+    // Kova tanımları: Level1 = NakedSingle + HiddenSingle (ileri teknik gerektirmez) +
+    // TechniqueCatalog'daki her teknik kendi tier'ında bir kova. Tek doğruluk kaynağı TechniqueCatalog'dur.
     private static readonly List<(int Level, string Technique)> BucketKeys = BuildBucketKeys();
 
     private static readonly Dictionary<(int Level, string Technique), int[]> counters =
@@ -42,7 +42,7 @@ class Program
 
     static List<(int, string)> BuildBucketKeys()
     {
-        var list = new List<(int, string)> { (1, "Singles") };
+        var list = new List<(int, string)> { (1, "NakedSingle"), (1, "HiddenSingle") };
         foreach (var (name, tier) in TechniqueCatalog.All)
             list.Add((tier, name));
         return list;
@@ -86,6 +86,9 @@ class Program
         // sayıp ilgili kovanın sayacını oradan başlatır, sonra dosyaya EKLEME (append)
         // modunda devam eder. Böylece program kapatılıp yeniden açılınca kaldığı
         // yerden sürer, daha önce bulunan satırlar kaybolmaz/silinmez.
+        // 3. kolon artık level numarası DEĞİL, oyunun "çözüldü mü" bayrağı (0/1) - level
+        // zaten dosya adından (levelN.csv) belli olduğu için parse edilmiyor, direkt
+        // döngünün kendi level değişkeni kullanılıyor.
         for (int level = 1; level <= 6; level++)
         {
             string path = Path.Combine(OutputDir, $"level{level}.csv");
@@ -97,9 +100,8 @@ class Program
                     if (string.IsNullOrWhiteSpace(line)) continue;
                     string[] parts = line.Split(',');
                     if (parts.Length < 4) continue;
-                    if (!int.TryParse(parts[2], out int lineLevel)) continue;
 
-                    var key = (lineLevel, parts[3].Trim());
+                    var key = (level, parts[3].Trim());
                     if (counters.TryGetValue(key, out int[] counter))
                         counter[0]++;
                 }
@@ -251,7 +253,8 @@ class Program
 
     static void WriteResult(int level, string puzzle, string solution, string technique)
     {
-        string line = $"{puzzle},{solution},{level},{technique}";
+        // 3. kolon oyundaki "çözüldü mü" bayrağı (0/1); yeni üretilen her satır 0 ile başlar.
+        string line = $"{puzzle},{solution},0,{technique}";
         lock (levelLocks[level])
         {
             writers[level].WriteLine(line);

@@ -26,8 +26,12 @@ using System.Collections.Generic;
 
             if (ceiling == 1)
             {
-                var singlesKey = (1, "Singles");
-                return openBuckets.Contains(singlesKey) ? singlesKey : ((int, string)?)null;
+                // Doğal çözüm her adımda önce naked single'ı dener, hidden single'a
+                // ancak naked single hiç yoksa düşer. Yani hidden single hiç ateşlenmediyse
+                // bulmaca tamamen naked single ile çözülmüş demektir; bir kez bile
+                // ateşlendiyse o adımda hidden single zorunluydu.
+                var key = natural.HiddenSingle > 0 ? (1, "HiddenSingle") : (1, "NakedSingle");
+                return openBuckets.Contains(key) ? key : ((int, string)?)null;
             }
 
             foreach (var (name, tier) in TechniqueCatalog.All)

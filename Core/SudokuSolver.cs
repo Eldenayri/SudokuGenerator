@@ -73,12 +73,14 @@ using System.Collections.Generic;
             {
                 if (FillNakedSingle(allCellCandidates, cells))
                 {
+                    result.NakedSingle++;
                     if (IsSolved(cells)) { result.Solved = true; break; }
                     continue;
                 }
 
                 if (FillHiddenSingle(allCellCandidates, cells))
                 {
+                    result.HiddenSingle++;
                     if (IsSolved(cells)) { result.Solved = true; break; }
                     continue;
                 }
