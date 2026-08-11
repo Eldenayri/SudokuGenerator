@@ -14,8 +14,9 @@ internal static class Program
         AppDomain.CurrentDomain.BaseDirectory,
         "..", "..", "..", "output"));
 
-    private const int TargetPerLevel = 2000;
+    private const int TargetPerLevel = 3000;
     private const int LevelCount = 6;
+    private const int MinimumEmptyCells = 40;
     private const int ProgressIntervalMs = 2000;
 
     private static readonly int[] Counts = new int[LevelCount + 1];
@@ -67,6 +68,8 @@ internal static class Program
         {
             string path = GetLevelPath(level);
             int count = 0;
+            int removedCount = 0;
+            var retainedLines = new List<string>();
 
             if (File.Exists(path))
             {
@@ -75,10 +78,26 @@ internal static class Program
                     if (string.IsNullOrWhiteSpace(rawLine))
                         continue;
 
-                    count++;
                     string[] parts = rawLine.Split(',');
-                    if (parts.Length > 0 && parts[0].Length == 81)
-                        KnownPuzzles.TryAdd(parts[0], 0);
+                    if (parts.Length == 0
+                        || parts[0].Length != 81
+                        || CountEmptyCells(parts[0]) < MinimumEmptyCells)
+                    {
+                        removedCount++;
+                        continue;
+                    }
+
+                    retainedLines.Add(rawLine);
+                    count++;
+                    KnownPuzzles.TryAdd(parts[0], 0);
+                }
+
+                if (removedCount > 0)
+                {
+                    File.WriteAllLines(path, retainedLines, new UTF8Encoding(false));
+                    Console.WriteLine(
+                        $"L{level}: {MinimumEmptyCells}'tan az boş hücre içeren " +
+                        $"{removedCount} eski kayıt kaldırıldı.");
                 }
             }
 
@@ -122,6 +141,9 @@ internal static class Program
 
                 if (stopRequested)
                     return;
+
+                if (CountEmptyCells(puzzle) < MinimumEmptyCells)
+                    continue;
 
                 HashSet<int> openLevels = GetOpenLevels();
                 if (openLevels.Count == 0)
@@ -183,6 +205,16 @@ internal static class Program
     private static string GetLevelPath(int level)
     {
         return Path.Combine(OutputDir, $"level{level}.csv");
+    }
+
+    private static int CountEmptyCells(string puzzle)
+    {
+        int count = 0;
+        foreach (char value in puzzle)
+            if (value == '0')
+                count++;
+
+        return count;
     }
 
     private static void PrintProgress(TimeSpan elapsed)
