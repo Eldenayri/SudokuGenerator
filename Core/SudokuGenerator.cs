@@ -10,7 +10,7 @@ using System.Linq;
 
         // random verilmezse thread'e özgü, birbirinden bağımsız bir tohum kullanılır
         // (çoklu thread'de paylaşılan/varsayılan Random güvenli değildir).
-        public SudokuGenerator(Random random = null)
+        public SudokuGenerator(Random? random = null)
         {
             this.random = random ?? new Random(Guid.NewGuid().GetHashCode());
         }

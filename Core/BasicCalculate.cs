@@ -37,7 +37,7 @@ using System.Collections.Generic;
                         allCellCandidates[r, c].Remove(value);
         }
 
-        // Teknikler (NakedPairs, XWing vb.) aday silerken kullanılır —
+        // Teknikler (NakedPairs, HiddenPairs vb.) aday silerken kullanılır —
         // tek bir hücrenin adaylarını dışarıdan temizledikten sonra
         // komşuların da tutarlı kalması için çağrılabilir.
         // FIX 1: null yerine IsFixed() kontrolü

@@ -1,13 +1,37 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 public static class TechniqueCatalog
 {
-    // Artan zorluk (tier) sırasında, tek doğruluk kaynağı.
-    // SudokuSolver bu sırayla dener, Program.cs kova listesini buradan türetir.
-    public static readonly (string Name, int Tier)[] All = new[]
+    // Kolaydan zora tek çözüm sırası. PointingPairs uygulaması blok içinde
+    // aynı satır/sütuna sıkışan hem iki hem de üç adayı kapsar.
+    public static readonly (int Level, string Name)[] LevelTechniques =
     {
-        ("NakedPairs", 2), ("HiddenPairs", 2), ("PointingPairs", 2), ("BoxLineReduction", 2),
-        ("XWing", 3), ("NakedTriples", 3), ("HiddenTriples", 3),
-        ("YWing", 4), ("Swordfish", 4), ("NakedQuads", 4), ("HiddenQuads", 4),
-        ("Skyscraper", 5), ("XYZWing", 5), ("UniqueRectangle", 5),
-        ("Jellyfish", 6), ("WWing", 6), ("XYChain", 6), ("SimpleColouring", 6), ("BUG", 6),
+        (1, "NakedSingle"),
+        (2, "HiddenSingle"),
+        (3, "NakedPairs"),
+        (4, "HiddenPairs"),
+        (5, "PointingPairs"),
+        (6, "BoxLineReduction"),
     };
+
+    public static IReadOnlyList<string> RequiredForLevel(int level)
+    {
+        if (level < 1 || level > LevelTechniques.Length)
+            throw new ArgumentOutOfRangeException(nameof(level));
+
+        return LevelTechniques
+            .Where(item => item.Level <= level)
+            .Select(item => item.Name)
+            .ToArray();
+    }
+
+    public static string TechniqueForLevel(int level)
+    {
+        if (level < 1 || level > LevelTechniques.Length)
+            throw new ArgumentOutOfRangeException(nameof(level));
+
+        return LevelTechniques[level - 1].Name;
+    }
 }

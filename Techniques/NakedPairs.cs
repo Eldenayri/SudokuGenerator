@@ -2,8 +2,8 @@ using System.Collections.Generic;
 
 public class NakedPairs
 {
-    List<int>[,] allCellCandidates;
-    SudokuCell[,] cells;
+    private List<int>[,] allCellCandidates = null!;
+    private SudokuCell[,] cells = null!;
 
     public bool Fill(List<int>[,] allCellCandidates, SudokuCell[,] cells)
     {
