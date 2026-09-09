@@ -43,20 +43,28 @@ public class SudokuSolver
         }
 
         basicCalculate.CalculateCandidates(allCellCandidates, cells);
-        var result = new SolveResult();
-
-        while (true)
+        var result = new SolveResult
         {
-            if (enabledTechniques.Contains("NakedSingle") &&
-                FillNakedSingle(allCellCandidates, cells))
+            Solved = IsSolved(cells),
+        };
+
+        while (!result.Solved)
+        {
+            if (enabledTechniques.Contains("NakedSingle"))
             {
-                result.Increment("NakedSingle");
-                if (IsSolved(cells))
+                int nakedSingleCells = CountNakedSingleCells(allCellCandidates, cells);
+                result.RecordNakedSingleStage(CountEmptyCells(cells), nakedSingleCells);
+
+                if (nakedSingleCells > 0 && FillNakedSingle(allCellCandidates, cells))
                 {
-                    result.Solved = true;
-                    break;
+                    result.Increment("NakedSingle");
+                    if (IsSolved(cells))
+                    {
+                        result.Solved = true;
+                        break;
+                    }
+                    continue;
                 }
-                continue;
             }
 
             if (enabledTechniques.Contains("HiddenSingle") &&
@@ -132,6 +140,30 @@ public class SudokuSolver
         }
 
         return false;
+    }
+
+    private static int CountNakedSingleCells(
+        List<int>[,] allCellCandidates,
+        SudokuCell[,] cells)
+    {
+        int count = 0;
+        for (int row = 0; row < 9; row++)
+            for (int col = 0; col < 9; col++)
+                if (!cells[row, col].IsFixed() && allCellCandidates[row, col].Count == 1)
+                    count++;
+
+        return count;
+    }
+
+    private static int CountEmptyCells(SudokuCell[,] cells)
+    {
+        int count = 0;
+        for (int row = 0; row < 9; row++)
+            for (int col = 0; col < 9; col++)
+                if (!cells[row, col].IsFixed())
+                    count++;
+
+        return count;
     }
 
     private bool FillHiddenSingle(List<int>[,] allCellCandidates, SudokuCell[,] cells)

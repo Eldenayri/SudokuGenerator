@@ -39,6 +39,53 @@ using System.Linq;
             }
         }
 
+        public bool HasUniqueSolution(string puzzle, string expectedSolution)
+        {
+            if (!IsValidPuzzleAndSolution(puzzle, expectedSolution))
+                return false;
+
+            return !HasAlternativeSolution(puzzle, expectedSolution);
+        }
+
+        private static bool IsValidPuzzleAndSolution(
+            string puzzle,
+            string expectedSolution)
+        {
+            if (puzzle.Length != 81 || expectedSolution.Length != 81)
+                return false;
+
+            int[] rowMask = new int[9];
+            int[] colMask = new int[9];
+            int[] boxMask = new int[9];
+
+            for (int i = 0; i < 81; i++)
+            {
+                char puzzleValue = puzzle[i];
+                char solutionValue = expectedSolution[i];
+                if (puzzleValue < '0' || puzzleValue > '9'
+                    || solutionValue < '1' || solutionValue > '9'
+                    || (puzzleValue != '0' && puzzleValue != solutionValue))
+                    return false;
+
+                int digit = solutionValue - '0';
+                int bit = 1 << (digit - 1);
+                int row = i / 9;
+                int col = i % 9;
+                int box = (row / 3) * 3 + (col / 3);
+
+                if ((rowMask[row] & bit) != 0
+                    || (colMask[col] & bit) != 0
+                    || (boxMask[box] & bit) != 0)
+                    return false;
+
+                rowMask[row] |= bit;
+                colMask[col] |= bit;
+                boxMask[box] |= bit;
+            }
+
+            return true;
+        }
+
         private string GenerateFullBoard()
         {
             int[] board = new int[81];

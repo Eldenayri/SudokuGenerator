@@ -20,6 +20,10 @@ internal static class Program
     private const int ProgressIntervalMs = 2000;
 
     private static readonly int[] Counts = new int[LevelCount + 1];
+    private static readonly Dictionary<string, int>[] QuotaCounts =
+        Enumerable.Range(0, LevelCount + 1)
+            .Select(_ => new Dictionary<string, int>())
+            .ToArray();
     private static readonly StreamWriter[] Writers = new StreamWriter[LevelCount + 1];
     private static readonly object[] LevelLocks =
         Enumerable.Range(0, LevelCount + 1).Select(_ => new object()).ToArray();
@@ -64,10 +68,12 @@ internal static class Program
 
     private static void LoadExistingCsvFiles()
     {
+        var classifier = new PuzzleClassifier(new SudokuSolver());
+        var uniquenessChecker = new SudokuGenerator();
+
         for (int level = 1; level <= LevelCount; level++)
         {
             string path = GetLevelPath(level);
-            int count = 0;
             int removedCount = 0;
             var retainedLines = new List<string>();
 
@@ -79,29 +85,42 @@ internal static class Program
                         continue;
 
                     string[] parts = rawLine.Split(',');
-                    if (parts.Length == 0
+                    if (parts.Length < 2
                         || parts[0].Length != 81
-                        || CountEmptyCells(parts[0]) < MinimumEmptyCells)
+                        || !uniquenessChecker.HasUniqueSolution(parts[0], parts[1])
+                        || CountEmptyCells(parts[0]) < MinimumEmptyCells
+                        || !classifier.MatchesLevel(parts[0], level))
                     {
                         removedCount++;
                         continue;
                     }
 
+                    string technique = classifier.TechniqueForAcceptedPuzzle(parts[0], level);
+                    string quotaKey = GetQuotaKey(level, parts[0], technique);
+                    if (!KnownPuzzles.TryAdd(parts[0], 0))
+                    {
+                        removedCount++;
+                        continue;
+                    }
+
+                    if (!TryClaim(level, quotaKey))
+                    {
+                        KnownPuzzles.TryRemove(parts[0], out _);
+                        removedCount++;
+                        continue;
+                    }
+
                     retainedLines.Add(rawLine);
-                    count++;
-                    KnownPuzzles.TryAdd(parts[0], 0);
                 }
 
                 if (removedCount > 0)
                 {
                     File.WriteAllLines(path, retainedLines, new UTF8Encoding(false));
                     Console.WriteLine(
-                        $"L{level}: {MinimumEmptyCells}'tan az boş hücre içeren " +
+                        $"L{level}: güncel kayıt şartlarını karşılamayan " +
                         $"{removedCount} eski kayıt kaldırıldı.");
                 }
             }
-
-            Counts[level] = count;
 
             // append:true eski CSV'leri korur; her yeni bulmaca dosyanın sonuna yazılır.
             Writers[level] = new StreamWriter(path, append: true, new UTF8Encoding(false));
@@ -153,13 +172,15 @@ internal static class Program
                 if (!level.HasValue || !KnownPuzzles.TryAdd(puzzle, 0))
                     continue;
 
-                if (!TryClaim(level.Value))
+                string technique = classifier.TechniqueForAcceptedPuzzle(puzzle, level.Value);
+                string quotaKey = GetQuotaKey(level.Value, puzzle, technique);
+                if (!TryClaim(level.Value, quotaKey))
                 {
                     KnownPuzzles.TryRemove(puzzle, out _);
                     continue;
                 }
 
-                WriteResult(level.Value, puzzle, solution);
+                WriteResult(level.Value, puzzle, solution, technique);
                 Interlocked.Increment(ref totalWritten);
             }
         }
@@ -172,17 +193,38 @@ internal static class Program
             .Where(level => Volatile.Read(ref Counts[level]) < TargetPerLevel));
     }
 
-    private static bool TryClaim(int level)
+    private static bool TryClaim(int level, string quotaKey)
     {
-        while (true)
+        lock (LevelLocks[level])
         {
-            int current = Volatile.Read(ref Counts[level]);
-            if (current >= TargetPerLevel)
+            int quotaTarget = GetQuotaTarget(level);
+            QuotaCounts[level].TryGetValue(quotaKey, out int quotaCount);
+            if (quotaCount >= quotaTarget || Counts[level] >= TargetPerLevel)
                 return false;
 
-            if (Interlocked.CompareExchange(ref Counts[level], current + 1, current) == current)
-                return true;
+            QuotaCounts[level][quotaKey] = quotaCount + 1;
+            Counts[level]++;
+            return true;
         }
+    }
+
+    private static int GetQuotaTarget(int level)
+    {
+        return level switch
+        {
+            <= 4 => 1500,
+            5 => 250,
+            6 => 100,
+            _ => throw new ArgumentOutOfRangeException(nameof(level)),
+        };
+    }
+
+    private static string GetQuotaKey(int level, string puzzle, string technique)
+    {
+        int emptyCells = CountEmptyCells(puzzle);
+        return level <= 4
+            ? emptyCells.ToString()
+            : $"{emptyCells}:{technique}";
     }
 
     private static bool AllLevelsFull()
@@ -192,9 +234,12 @@ internal static class Program
             .All(level => Volatile.Read(ref Counts[level]) >= TargetPerLevel);
     }
 
-    private static void WriteResult(int level, string puzzle, string solution)
+    private static void WriteResult(
+        int level,
+        string puzzle,
+        string solution,
+        string technique)
     {
-        string technique = TechniqueCatalog.TechniqueForLevel(level);
         lock (LevelLocks[level])
         {
             Writers[level].WriteLine($"{puzzle},{solution},0,{technique}");

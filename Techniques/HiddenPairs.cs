@@ -6,8 +6,6 @@ public class HiddenPairs
     public bool Fill(List<int>[,] allCellCandidates, SudokuCell[,] cells)
     {
 
-        bool changed = false;
-
         // ======================
         // SATIRLAR
         // ======================
@@ -38,6 +36,7 @@ public class HiddenPairs
                     // n1 ve n2 aynı 2 hücrede mi geçiyor?
                     if (cols2.Count == 2 && cols1[0] == cols2[0] && cols1[1] == cols2[1])
                     {
+                        bool changed = false;
                         // Hidden Pair bulundu, bu 2 hücreden n1 ve n2 dışındaki adayları sil
                         int ca = cols1[0], cb = cols1[1];
                         List<int> pair = new List<int> { n1, n2 };
@@ -49,6 +48,8 @@ public class HiddenPairs
                             candidates.RemoveAll(x => !pair.Contains(x));
                             if (candidates.Count != before) changed = true;
                         }
+
+                        if (changed) return true;
                     }
                 }
             }
@@ -81,6 +82,7 @@ public class HiddenPairs
 
                     if (rows2.Count == 2 && rows1[0] == rows2[0] && rows1[1] == rows2[1])
                     {
+                        bool changed = false;
                         int ra = rows1[0], rb = rows1[1];
                         List<int> pair = new List<int> { n1, n2 };
 
@@ -91,6 +93,8 @@ public class HiddenPairs
                             candidates.RemoveAll(x => !pair.Contains(x));
                             if (candidates.Count != before) changed = true;
                         }
+
+                        if (changed) return true;
                     }
                 }
             }
@@ -129,6 +133,7 @@ public class HiddenPairs
                             cells1[0] == cells2[0] &&
                             cells1[1] == cells2[1])
                         {
+                            bool changed = false;
                             List<int> pair = new List<int> { n1, n2 };
 
                             foreach (var (r, c) in cells1)
@@ -138,12 +143,14 @@ public class HiddenPairs
                                 candidates.RemoveAll(x => !pair.Contains(x));
                                 if (candidates.Count != before) changed = true;
                             }
+
+                            if (changed) return true;
                         }
                     }
                 }
             }
         }
 
-        return changed;
+        return false;
     }
 }

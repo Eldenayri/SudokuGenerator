@@ -5,8 +5,6 @@ public class PointingPairs
 {
     public bool Fill(List<int>[,] allCellCandidates, SudokuCell[,] cells)
     {
-        bool changed = false;
-
         for (int br = 0; br < 3; br++)
         {
             for (int bc = 0; bc < 3; bc++)
@@ -34,6 +32,7 @@ public class PointingPairs
                     if (sameRow)
                     {
                         int row = found[0].r;
+                        bool changed = false;
 
                         // Aynı satırın blok dışındaki hücrelerinden sil
                         for (int c = 0; c < 9; c++)
@@ -45,6 +44,8 @@ public class PointingPairs
                             allCellCandidates[row, c].Remove(number);
                             if (allCellCandidates[row, c].Count != before) changed = true;
                         }
+
+                        if (changed) return true;
                     }
 
                     // ======================
@@ -55,6 +56,7 @@ public class PointingPairs
                     if (sameCol)
                     {
                         int col = found[0].c;
+                        bool changed = false;
 
                         // Aynı sütunun blok dışındaki hücrelerinden sil
                         for (int r = 0; r < 9; r++)
@@ -66,11 +68,13 @@ public class PointingPairs
                             allCellCandidates[r, col].Remove(number);
                             if (allCellCandidates[r, col].Count != before) changed = true;
                         }
+
+                        if (changed) return true;
                     }
                 }
             }
         }
 
-        return changed;
+        return false;
     }
 }

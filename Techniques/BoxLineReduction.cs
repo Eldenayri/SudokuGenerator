@@ -5,8 +5,6 @@ public class BoxLineReduction
 {
     public bool Fill(List<int>[,] allCellCandidates, SudokuCell[,] cells)
     {
-        bool changed = false;
-
         // ======================
         // SATIRLAR
         // ======================
@@ -31,6 +29,7 @@ public class BoxLineReduction
                 {
                     int startRow = (row / 3) * 3;
                     int startCol = blockCol * 3;
+                    bool changed = false;
 
                     // Aynı bloğun satır dışındaki hücrelerinden sil
                     for (int r = startRow; r < startRow + 3; r++)
@@ -45,6 +44,8 @@ public class BoxLineReduction
                             if (allCellCandidates[r, c].Count != before) changed = true;
                         }
                     }
+
+                    if (changed) return true;
                 }
             }
         }
@@ -73,6 +74,7 @@ public class BoxLineReduction
                 {
                     int startRow = blockRow * 3;
                     int startCol = (col / 3) * 3;
+                    bool changed = false;
 
                     // Aynı bloğun sütun dışındaki hücrelerinden sil
                     for (int r = startRow; r < startRow + 3; r++)
@@ -87,11 +89,13 @@ public class BoxLineReduction
                             if (allCellCandidates[r, c].Count != before) changed = true;
                         }
                     }
+
+                    if (changed) return true;
                 }
             }
         }
 
-        return changed;
+        return false;
     }
 
 }

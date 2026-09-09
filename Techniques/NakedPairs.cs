@@ -10,8 +10,6 @@ public class NakedPairs
         this.allCellCandidates = allCellCandidates;
         this.cells = cells;
 
-        bool changed = false;
-
         // =========================
         // SATIRLAR
         // =========================
@@ -31,7 +29,8 @@ public class NakedPairs
                     List<int> cand2 = allCellCandidates[row, c2];
 
                     if (IsSamePair(cand1, cand2))
-                    { 
+                    {
+                        bool changed = false;
                         // Naked Pair bulundu
 
                         for (int col = 0; col < 9; col++)
@@ -39,8 +38,11 @@ public class NakedPairs
                             if (col == c1 || col == c2) continue;
                             if (cells[row, col].IsFixed()) continue;
 
-                            if (RemoveCandidates(row, col, cand1)) changed = true;
+                            if (RemoveCandidates(row, col, cand1))
+                                changed = true;
                         }
+
+                        if (changed) return true;
                     }
                 }
             }
@@ -66,13 +68,17 @@ public class NakedPairs
 
                     if (IsSamePair(cand1, cand2))
                     {
+                        bool changed = false;
                         for (int row = 0; row < 9; row++)
                         {
                             if (row == r1 || row == r2) continue;
                             if (cells[row, col].IsFixed()) continue;
 
-                            if (RemoveCandidates(row, col, cand1)) changed = true; 
+                            if (RemoveCandidates(row, col, cand1))
+                                changed = true;
                         }
+
+                        if (changed) return true;
                     }
                 }
             }
@@ -107,18 +113,22 @@ public class NakedPairs
 
                         if (IsSamePair(cand1, cand2))
                         {
+                            bool changed = false;
                             foreach (var (r, c) in blockCells)
                             {
                                 if ((r == r1 && c == c1) || (r == r2 && c == c2)) continue;
-                                if (RemoveCandidates(r, c, cand1)) changed = true;
+                                if (RemoveCandidates(r, c, cand1))
+                                    changed = true;
                             }
+
+                            if (changed) return true;
                         }
                     }
                 }
             }
         }
 
-        return changed;
+        return false;
     }
 
     private bool IsSamePair(List<int> a, List<int> b)
